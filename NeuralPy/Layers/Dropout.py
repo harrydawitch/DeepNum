@@ -9,6 +9,7 @@ class Dropout:
         self.name = 'Dropout'
         self.units = None
         self.learnable = False
+        self._training_= True
         
     
     def _init_mask(self, inputs):
@@ -22,6 +23,6 @@ class Dropout:
         outputs = inputs * self.mask / self.rate
         return outputs
     
-    def backward(self, da, y):
+    def backward(self, da):
         da = da * self.mask / self.rate
         return da

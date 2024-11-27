@@ -5,6 +5,8 @@ class Tanh:
         self.name = 'tanh'  
         self.is_output_layer = False
         self.units = None
+        self._training_= True
+
 
     def forward(self, Z):
         self.inputs = Z
@@ -38,6 +40,7 @@ class ReLU:
         self.threshold = threshold
         self.max_value = max_value
         self.negative_slope = negative_slope
+        self._training_= True
 
     
     def forward(self, Z):
@@ -69,6 +72,7 @@ class Sigmoid:
     def __init__(self):
         self.name = 'sigmoid'  
         self.is_output_layer = False
+        self._training_= True
         self.units = None
 
     def forward(self, Z):
@@ -93,6 +97,7 @@ class Softmax:
         self.name = 'softmax'
         self.is_output_layer = False
         self.units = None
+        self._training_= True
     
     def forward(self, Z):
         self.inputs = Z

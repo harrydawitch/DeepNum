@@ -4,6 +4,7 @@ from Layers.Dense import *
 from Layers.Dropout import *
 from Optimizers.Optimizers import *
 from Activations.Activations import *
+from Layers.BatchNormalization import *
 
 import numpy as np
 from tensorflow.keras.datasets import mnist
@@ -31,17 +32,17 @@ y_test = to_categorical(y_test, 10).T   # Shape will be [10, 10000]
 
 model = NeuralPy()
 
-model.add(Dense(128, input_size= X_train.shape[0], initializer= 'he_uniform', regularizer= ('l2', 0.01)))
-model.add(ReLU(negative_slope=0.2))
-model.add(Dense(64, initializer= 'he_uniform', regularizer= ('l2', 0.01)))
-model.add(ReLU(negative_slope=0.2))
-model.add(Dense(32, initializer= 'he_uniform', regularizer= ('l2', 0.01)))
-model.add(ReLU(negative_slope=0.2))
+model.add(Dense(128, activation= 'relu', input_size= X_train.shape[0], initializer= 'he_uniform', regularizer= ('l2', 0.001)))
+model.add(BatchNormalization())
+model.add(Dense(64, activation= 'relu', initializer= 'he_uniform', regularizer= ('l2', 0.001)))
+model.add(BatchNormalization())
+model.add(Dense(32, activation= 'relu', initializer= 'he_uniform', regularizer= ('l2', 0.001)))
+model.add(BatchNormalization())
 model.add(Dense(10, activation= 'softmax', initializer= 'he_uniform'))
 
-model.compile(optimizer= Gradient_Descent(learning_rate= 0.13, clip= 3.0), losses= 'categorical_crossentropy', metrics= 'f1')
+model.compile(optimizer= Adam(learning_rate= 0.001, clip= 4.0), losses= 'categorical_crossentropy', metrics= 'accuracy')
 
-history = model.fit(X_train, y_train, batch_size= 32, epochs= 10, verbose= True)
+history = model.fit(X_train, y_train, batch_size= 128, epochs= 10, verbose= True)
 
 prediction = model.predict(X_test)
 print(prediction)

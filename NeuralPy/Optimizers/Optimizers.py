@@ -12,6 +12,7 @@ class Adam:
         self.clip = clip
         self.name = 'adam'
         self._contain_parameters = False
+        self.main_layers = ['Dense']
         self.t = 0
 
     def call(self, layer):
@@ -26,7 +27,8 @@ class Adam:
 
             self._contain_parameters = True
         
-        layer.dw += pick_regularizers(regularizer_args= layer.regularizer, weight = layer.weight)
+        if layer.name in self.main_layers:
+            layer.dw += pick_regularizers(regularizer_args= layer.regularizer, weight = layer.weight)
         
         self.v_dw = self.beta1 * self.v_dw + (1 - self.beta1) * layer.dw
         self.v_db = self.beta1 * self.v_db + (1 - self.beta1) * layer.db
@@ -54,6 +56,7 @@ class RMSprop:
         self.epsilon = epsilon
         self.clip = clip
         self.name = 'rmsprop'
+        self.main_layers = ['Dense']
         self.contain_parameters = False
 
     def call(self, layer):
@@ -65,7 +68,8 @@ class RMSprop:
             
             self.contain_parameters = True
 
-        layer.dw += pick_regularizers(regularizer_args= layer.regularizer, weight = layer.weight)
+        if layer.name in self.main_layers:
+            layer.dw += pick_regularizers(regularizer_args= layer.regularizer, weight = layer.weight)
 
 
         self.s_dw = self.beta * self.s_dw + (1 - self.beta) * (layer.dw ** 2)
@@ -86,6 +90,7 @@ class Momentum:
         self.beta = beta
         self.clip = clip
         self.name = 'momentum'
+        self.main_layers = ['Dense']
         self.contain_parameters= False
 
     def call(self, layer):
@@ -97,8 +102,8 @@ class Momentum:
         
             self.contain_parameters = True
         
-
-        layer.dw += pick_regularizers(regularizer_args= layer.regularizer, weight = layer.weight)
+        if layer.name in self.main_layers:
+            layer.dw += pick_regularizers(regularizer_args= layer.regularizer, weight = layer.weight)
 
         self.v_dw = self.beta * self.v_dw + (1 - self.beta) * layer.dw
         self.v_db = self.beta * self.v_db + (1 - self.beta) * layer.db
@@ -115,10 +120,13 @@ class Gradient_Descent:
         self.learning_rate = learning_rate
         self.clip = clip
         self.name = 'sgd'
+        self.main_layers = ['Dense']
+
 
     def call(self, layer):
         # Apply regularizer to gradients
-        layer.dw += pick_regularizers(regularizer_args= layer.regularizer, weight = layer.weight)
+        if layer.name in self.main_layers:
+            layer.dw += pick_regularizers(regularizer_args= layer.regularizer, weight = layer.weight)
 
         # Compute and clip updates
         layer.dw = np.clip(layer.dw, -self.clip, self.clip)

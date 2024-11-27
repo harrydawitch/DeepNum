@@ -8,16 +8,19 @@ import copy
 class NeuralPy:
     def __init__(self):
         self.layers = []
-        self.layers_type = ['Dense', 'Dropout']
+        self.layers_type = ['Dense', 'Dropout', 'BatchNormalization']
         self.activations_type = ['relu', 'tanh', 'sigmoid', 'softmax']
 
     def add(self, layer):
 
         if layer.name in self.layers_type:
-            if layer.name == 'Dense':
+            if layer.name == 'Dense' or 'BatchNormalization':
                 if layer.input_size is None:
-                    layer.input_size = self.layers[-1].units
-                    layer._init_params()
+                    if self.layers:
+                        layer.input_size = self.layers[-1].units
+                        layer._init_params()
+                    else:
+                        raise ValueError('You must specify input_size for first layer!')
 
             elif layer.name == 'Dropout':
                 layer.units = self.layers[-1].units
@@ -136,7 +139,7 @@ class NeuralPy:
 
         for layer in reversed(self.layers):
             if layer.name in self.layers_type:
-                da = layer.backward(da ,y)
+                da = layer.backward(da)
 
                 if layer.learnable:
                     update_parameter(optimizer= self.optimizer, layer= layer)

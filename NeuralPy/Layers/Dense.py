@@ -11,6 +11,7 @@ class Dense:
         self.regularizer = regularizer
         self.is_output_layer = False
         self.learnable = True
+        self._training_= True
         self.name = 'Dense'
 
         if self.input_size is not None:
@@ -44,8 +45,8 @@ class Dense:
         return self.outputs
 
 
-    def backward(self, da, y): 
-        m = y.shape[1]
+    def backward(self, da): 
+        m = da.shape[1]
         
         if self.is_output_layer:
             dZ = da
