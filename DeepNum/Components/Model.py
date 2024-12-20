@@ -1,7 +1,7 @@
     
 import numpy as np
 import copy
-from Components.Utilities.Utils import find_shape, pick_loss
+from Components.Utils import find_shape
 
 
 class Sequential:
@@ -49,7 +49,7 @@ class Sequential:
 
 
     def update_parameters(self):
-        for layer in self.layers:
+        for layer in reversed(self.layers):
 
             if hasattr(layer, 'parameters'):
                 layer.optimizer.call(layer= layer)           
@@ -58,15 +58,13 @@ class Sequential:
 
 
 
-    def train(self, batch_size=None, epochs=None, verbose=False, patience=float('inf')):
+    def train(self, batch_size=None, epochs=None):
         m = self.data['X_train'].shape[find_shape(self.data['X_train'], mode='samples')]
+
         batch_size = batch_size or min(32, m)  # Default to 32 or full dataset size if smaller
+        if not epochs or not isinstance(epochs, int) or epochs <= 0: raise ValueError('Invalid value for epochs. Must be a positive integer.')
 
-        if not epochs or not isinstance(epochs, int) or epochs <= 0:
-            raise ValueError('Invalid value for epochs. Must be a positive integer.')
 
-        previous_loss = float('inf')
-        patience_counter = 0
         history = {'loss': [], 'accuracy': []}
 
         for epoch in range(1, epochs + 1):
@@ -75,46 +73,28 @@ class Sequential:
             X_train = self.data['X_train']
             y_train = self.data['y_train']
             
-            X_shuffled = X_train[:, permutation] if len(X_train.shape) <= 2 else X_train[permutation, :]
-            y_shuffled = y_train[:, permutation]
+            X_shuffled = X_train[permutation, :]
+            y_shuffled = y_train[permutation, :]
 
             for batch_start in range(0, m, batch_size):
                 batch_end = min(batch_start + batch_size, m)
-                X_batches = X_shuffled[:, batch_start:batch_end] if len(X_shuffled.shape) <= 2 else X_shuffled[batch_start:batch_end, :]
-                y_batches = y_shuffled[:, batch_start:batch_end]
+                X_batches = X_shuffled[batch_start:batch_end, :]
+                y_batches = y_shuffled[batch_start:batch_end, :]
+                
                 
                 # Forward and backward propagation
                 y_pred = self.forward_propagation(X_batches)
 
-
                 batch_loss =  self.configuration['loss'].call(y_pred, y_batches)
-                accuracy = self.metric(y_pred, y_batches)
-                s = '\rEpoch: [{}] - Loss: [{}]% - Accuracy: [{}]%'.format(epoch, float(np.round(batch_loss, 5)), accuracy*100)
 
                 dout =  self.configuration['loss'].backward(y_pred, y_batches)
 
                 self.backward_propagation(inputs= dout)
                 self.update_parameters()
 
+                s = f"\rEpoch: [{epoch}] - Loss: [{float(np.round(batch_loss, 5))}]"
                 print(s, end="", flush= True)
 
-            # Calculate average loss for the epoch
-
-            history['loss'].append(batch_loss)
-
-            # Early stopping logic
-            if batch_loss < previous_loss:
-                patience_counter = 0
-                # Save model weights (if applicable)
-            else:
-                patience_counter += 1
-
-            previous_loss = batch_loss
-
-
-            if patience_counter >= patience:
-                print(f"Early stopping at epoch {epoch}.")
-                break
 
         return history
 

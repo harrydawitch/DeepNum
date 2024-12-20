@@ -1,5 +1,5 @@
 import numpy as np
-from Components.Utilities.Utils import find_shape
+from Components.Utils import find_shape
 from Components.Layers.Base import Layer
 
 
@@ -27,7 +27,7 @@ class Dense(Layer):
 
         self.data_in = inputs
 
-        Z = np.matmul(self.parameters['Weight'], self.data_in) + self.parameters['bias']
+        Z = np.matmul(self.data_in, self.parameters['Weight']) + self.parameters['bias']
         
         return Z
     
@@ -36,7 +36,7 @@ class Dense(Layer):
     def backward(self, dout): 
         m = dout.shape[find_shape(dout, mode='samples')]
         
-        self.grads['dW'] = np.matmul(dout, self.data_in.T) / m
+        self.grads['dW'] = np.matmul(self.data_in.T, dout) / m
         self.grads['db'] = np.sum(dout, axis= find_shape(dout, mode='samples'), keepdims= True) / m
 
 
@@ -45,6 +45,6 @@ class Dense(Layer):
             self.grads['dW'] += penalty
 
 
-        dout = np.matmul(self.parameters['Weight'].T, dout)
+        dout = np.matmul(dout, self.parameters['Weight'].T)
 
         return dout

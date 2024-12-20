@@ -1,5 +1,5 @@
 import numpy as np
-from Components.Utilities.Utils import find_shape
+from Components.Utils import find_shape
 from Components.Layers.Base import Layer
 
 class Tanh(Layer):
@@ -17,10 +17,7 @@ class Tanh(Layer):
     
     def backward(self, dout):
 
-        numerator = np.exp(self.data_in) - np.exp(-self.data_in)
-        denominator = np.exp(self.data_in) + np.exp(-self.data_in)
         tan_h = (np.exp(self.data_in) - np.exp(-self.data_in)) / (np.exp(self.data_in) + np.exp(-self.data_in))
-
         tanh_derivative = 1 - (tan_h ** 2)
 
         return dout * tanh_derivative
@@ -40,8 +37,8 @@ class ReLU(Layer):
         self.negative_slope = negative_slope
 
     
-    def forward(self, Z):
-        self.data_in = Z
+    def forward(self, inputs):
+        self.data_in = inputs
 
         data_out = np.where(self.data_in <= self.threshold, self.data_in * self.negative_slope, self.data_in)
 
@@ -79,8 +76,7 @@ class Sigmoid(Layer):
     def backward(self, dout):
         
         sigmoid = 1 / (1 + np.exp(-self.data_in))
-        derivative=  sigmoid * (1 - sigmoid)
-        return dout * derivative
+        return dout * (sigmoid * (1 - sigmoid))
 
     def __call__(self, Z):
         return self.forward(Z)

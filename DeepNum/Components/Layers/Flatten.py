@@ -8,16 +8,15 @@ class Flatten(Layer):
         self.name = 'Flatten'
 
     def forward(self, inputs):
-        N, C, H, W = inputs.shape
         self.data_in = inputs.shape
-
-        # The input shape from previous layer follow the channel first convention (NCHW)
-        # Because my next layer which is Dense need input to be [features, batches]
-        # So i reshape to be (C * H * W, N)
-        flattened_output = inputs.reshape(C * H * W , N)  
-        return flattened_output
+        self.data_out = (self.data_in[0], -1)
+        
+        out = inputs.ravel().reshape(self.data_out)
+        self.data_out = self.data_out[1]
+        
+        return out
 
     def backward(self, dout):
 
-        dout_reshaped = dout.reshape(self.data_in) 
-        return dout_reshaped  
+        dout = dout.reshape(self.data_in) 
+        return dout  

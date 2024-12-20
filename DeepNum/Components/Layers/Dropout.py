@@ -15,8 +15,8 @@ class Dropout(Layer):
 
 
     def _init_mask(self, inputs):
-        n, m  = inputs.shape
-        self.mask = (np.random.rand(n, m) < self.rate).astype(int)
+        m, n  = inputs.shape
+        self.mask = (np.random.rand(m, n) < self.rate).astype(int)
 
 
 
