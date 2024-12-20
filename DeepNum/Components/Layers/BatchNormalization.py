@@ -1,6 +1,6 @@
 import numpy as np
-from Components.Utilities.Utils import find_shape
-from .Base import Layer
+from Components.Utils import find_shape
+from Components.Layers.Base import Layer
 
 
 
@@ -19,8 +19,8 @@ class BatchNormalization(Layer):
     def normalize(self):
 
         m = self.data_in.shape[find_shape(self.data_in, mode= 'samples')]
-        self.mean = np.sum(self.data_in, axis= find_shape(self.data_in, mode= 'samples'), keepdims= True) / m
-        self.var =  np.sum((self.data_in - self.mean)**2, axis= find_shape(self.data_in, mode= 'samples'), keepdims= True) / m
+        self.mean = np.sum(self.data_in, axis= find_shape(self.data_in, mode= 'samples'), keepdims= False) / m
+        self.var =  np.sum((self.data_in - self.mean)**2, axis= find_shape(self.data_in, mode= 'samples'), keepdims= False) / m
         
         x_normalized = (self.data_in - self.mean) / np.sqrt(self.var + self.epsilon)
         return x_normalized
@@ -46,7 +46,7 @@ class BatchNormalization(Layer):
         else:
             self.x_normalized = ( self.data_in - self.running_mean) / np.sqrt(self.running_var + self.epsilon)
     
-        data_out = self.parameters['Weight'] * self.x_normalized + self.parameters['bias']         
+        data_out = self.x_normalized * self.parameters['Weight'] + self.parameters['bias']         
         return data_out
     
 
@@ -56,15 +56,15 @@ class BatchNormalization(Layer):
 
         m = dout.shape[find_shape(dout, mode='samples')]
 
-        self.grads['dW'] = np.sum(dout * self.x_normalized, axis= find_shape(dout, mode='samples'), keepdims= True)
-        self.grads['db'] = np.sum(dout, axis= find_shape(dout, mode='samples'), keepdims= True)
+        self.grads['dW'] = np.sum(dout * self.x_normalized, axis= find_shape(dout, mode='samples'), keepdims= False)
+        self.grads['db'] = np.sum(dout, axis= find_shape(dout, mode='samples'), keepdims= False)
 
         dX_hat = dout * self.parameters['Weight']
         dvar = np.sum((dX_hat * (self.data_in - self.mean)) * -0.5 * (self.var + self.epsilon)**(-3/2), \
-                      axis= find_shape(dX_hat, mode='samples'), keepdims= True)
+                      axis= find_shape(dX_hat, mode='samples'), keepdims= False)
         
-        dmean = np.sum(dX_hat * -1 / np.sqrt(self.var + self.epsilon), axis= find_shape(dX_hat, mode='samples'), keepdims= True) + \
-                        dvar * np.sum(-2 * (self.data_in - self.mean), axis= find_shape(dX_hat, mode='samples'), keepdims= True) / m
+        dmean = np.sum(dX_hat * -1 / np.sqrt(self.var + self.epsilon), axis= find_shape(dX_hat, mode='samples'), keepdims= False) + \
+                        dvar * np.sum(-2 * (self.data_in - self.mean), axis= find_shape(dX_hat, mode='samples'), keepdims= False) / m
 
         dout = (dX_hat * (1/np.sqrt(self.var + self.epsilon))) + (dvar * (2*(self.data_in - self.mean) / m)) + (dmean * (1/m))
 

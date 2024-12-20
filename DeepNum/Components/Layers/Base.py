@@ -1,5 +1,5 @@
 import numpy as np
-from Components.Utilities.Utils import pick_initializer
+from Components.Utils import pick_initializer
 
 class Layer():
     def __init__(self):
@@ -21,13 +21,14 @@ class Layer():
 
         if self.name == 'Dense':
             self.parameters['Weight'] = pick_initializer(initializers= self.initializer, 
-                                            shape= (self.output, self.shape), 
+                                            shape= (self.shape, self.output), 
                                             name= self.name)    
-            self.parameters['bias'] = np.zeros((self.output, 1))
+            self.parameters['bias'] = np.zeros((1, self.output))
+
+
 
         
         elif self.name == 'Conv2D':
-            
 
             self.parameters['Weight'] = pick_initializer(initializers= self.initializer, 
                                             shape= (self.output, self.shape, self.filter_size, self.filter_size), 
@@ -38,13 +39,14 @@ class Layer():
     
 
 
+
         elif self.name == 'BatchNormalization':
 
-            self.parameters['Weight'] = np.ones((self.shape, 1)) 
-            self.parameters['bias'] = np.zeros((self.shape, 1))
+            self.parameters['Weight'] = np.ones((self.shape,)) 
+            self.parameters['bias'] = np.zeros((self.shape,))
 
-            self.running_mean = np.zeros((self.shape, 1))
-            self.running_var = np.ones((self.shape, 1))
+            self.running_mean = np.zeros((self.shape,))
+            self.running_var = np.ones((self.shape,))
             
             self.output = self.shape 
 
